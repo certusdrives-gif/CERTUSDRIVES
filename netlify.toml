@@ -1,0 +1,65 @@
+# ============================================
+# CONFIGURACIÓN DE NETLIFY - CERTUS DRIVE
+# ============================================
+
+[build]
+  # Directorio de publicación (raíz del proyecto)
+  publish = "."
+  
+  # Comando de build (no necesario para sitio estático)
+  command = ""
+
+# Redireccionamiento para SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["authenticated"]}
+
+# Headers de seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Seguridad HTTPS
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    
+    # Prevenir clickjacking
+    X-Frame-Options = "SAMEORIGIN"
+    
+    # XSS Protection
+    X-XSS-Protection = "1; mode=block"
+    
+    # Content Type Sniffing
+    X-Content-Type-Options = "nosniff"
+    
+    # Referrer Policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Permissions Policy
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# Cache para assets estáticos
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Página de error personalizada
+[[redirects]]
+  from = "/404"
+  to = "/login.html"
+  status = 404
+
+# Variables de entorno (configurar en Netlify UI)
+# SUPABASE_URL
+# SUPABASE_ANON_KEY

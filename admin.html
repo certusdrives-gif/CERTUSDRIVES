@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - CERTUS Drive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <!-- AppBar -->
+    <div class="app-bar">
+        <div class="app-bar-left">
+            <img src="assets/certus.png" alt="CERTUS Logo" class="logo">
+            <h1>Panel de Administración</h1>
+        </div>
+        <div class="app-bar-right">
+            <span class="user-email" id="userEmail"></span>
+            <button class="btn-secondary" onclick="volverAlInicio()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>
+                Volver al Inicio
+            </button>
+            <button class="btn-secondary btn-logout" onclick="cerrarSesionAdmin()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                Cerrar Sesión
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="admin-container">
+        <!-- Sidebar con Estadísticas -->
+        <aside class="sidebar">
+            <div class="stats-card">
+                <div class="stat-icon icon-total">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                </div>
+                <div class="stat-info">
+                    <p>Total Recursos</p>
+                    <h3 id="totalRecursos">0</h3>
+                </div>
+            </div>
+            <div class="stats-card">
+                <div class="stat-icon icon-activos">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                </div>
+                <div class="stat-info">
+                    <p>Recursos Activos</p>
+                    <h3 id="recursosActivos">0</h3>
+                </div>
+            </div>
+            <div class="stats-card">
+                <div class="stat-icon icon-areas">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L8 16v1c0 1.1.9 2 2 2v.93zM13 19.93V19c0-1.1-.9-2-2-2v-1l3.79-5.79c.31-.48.13-1.15-.35-1.46-.31-.2-.7-.2-1.01 0l-4.22 2.81L8.41 7.41c.31-.48.13-1.15-.35-1.46-.48-.31-1.15-.13-1.46.35L3.07 11.5c-.23.35-.23.79 0 1.13L6 18.32V15c0-1.1.9-2 2-2h2.5l2.5 4.01V19.93z"/></svg>
+                </div>
+                <div class="stat-info">
+                    <p>Áreas Diferentes</p>
+                    <h3 id="totalAreas">0</h3>
+                </div>
+            </div>
+            
+            <!-- Filtro por Área -->
+            <div class="filter-section">
+                <h3>Filtrar por Área</h3>
+                <select id="filtroArea" class="filter-select" onchange="filtrarPorArea()" title="Filtrar recursos por área" aria-label="Filtrar por área">
+                    <option value="">Todas las áreas</option>
+                </select>
+            </div>
+
+            <!-- Filtro por Estado -->
+            <div class="filter-section">
+                <h3>Filtrar por Estado</h3>
+                <select id="filtroEstado" class="filter-select" onchange="filtrarPorEstado()" title="Filtrar recursos por estado" aria-label="Filtrar por estado">
+                    <option value="todos">Todos</option>
+                    <option value="activos">Solo Activos</option>
+                    <option value="inactivos">Solo Inactivos</option>
+                </select>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <!-- Barra de Acciones -->
+            <div class="actions-bar">
+                <div class="search-box">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Buscar por título, área o palabra clave..." 
+                        onkeyup="buscarRecursos()"
+                    >
+                </div>
+                <button class="btn-primary" onclick="abrirModalNuevo()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    Nuevo Recurso
+                </button>
+            </div>
+
+            <!-- Tabla de Recursos -->
+            <div class="table-container">
+                <!-- Skeleton Loader para la tabla -->
+                <div class="table-skeleton" id="tableSkeleton">
+                    <div class="skeleton-row skeleton-header">
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                    </div>
+                    <div class="skeleton-row">
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                    </div>
+                    <div class="skeleton-row">
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                    </div>
+                    <div class="skeleton-row">
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                    </div>
+                    <div class="skeleton-row">
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                    </div>
+                </div>
+                
+                <table class="recursos-table" id="recursosTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Área</th>
+                            <th>Título</th>
+                            <th>Descripción</th>
+                            <th>Enlace</th>
+                            <th>Palabras Clave</th>
+                            <th>Estado</th>
+                            <th>Fecha Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaRecursos">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <div class="pagination" id="paginacion">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Crear/Editar Recurso -->
+    <div id="modalRecurso" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitulo">Nuevo Recurso</h2>
+                <button class="btn-close" onclick="cerrarModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                </button>
+            </div>
+            <form id="formRecurso" onsubmit="guardarRecurso(event)">
+                <div class="form-group">
+                    <label for="inputArea">Área *</label>
+                    <select id="inputArea" required>
+                        <option value="">Selecciona un área</option>
+                        <option value="ATENCIÓN - FRONT">ATENCIÓN - FRONT</option>
+                        <option value="ATENCIÓN- CANALES">ATENCIÓN- CANALES</option>
+                        <option value="CRÉDITO Y COBRANZAS">CRÉDITO Y COBRANZAS</option>
+                        <option value="FACTURACIÓN">FACTURACIÓN</option>
+                        <option value="RR.HH">RR.HH</option>
+                        <option value="PEC">PEC</option>
+                        <option value="REINGRESO">REINGRESO</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputTitulo">Título *</label>
+                    <input 
+                        type="text" 
+                        id="inputTitulo" 
+                        placeholder="Ej: Manual de Crédito Educativo 2025" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="inputDescripcion">Descripción</label>
+                    <textarea 
+                        id="inputDescripcion" 
+                        rows="3" 
+                        placeholder="Breve descripción del recurso..."
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputEnlace">Enlace (Google Drive) *</label>
+                    <input 
+                        type="url" 
+                        id="inputEnlace" 
+                        placeholder="https://drive.google.com/..." 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="inputPalabras">Palabras Clave</label>
+                    <input 
+                        type="text" 
+                        id="inputPalabras" 
+                        placeholder="credito, educativo, manual (separadas por comas)"
+                    >
+                    <small>Separa las palabras con comas. Ejemplo: credito, educativo, manual</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="inputActivo" checked>
+                        <span>Recurso Activo</span>
+                    </label>
+                    <small>Los recursos inactivos no se muestran a los usuarios</small>
+                </div>
+
+                <input type="hidden" id="recursoId">
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación para Eliminar -->
+    <div id="modalConfirmar" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2><svg class="icon-header" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Confirmar Eliminación</h2>
+                <button class="btn-close" onclick="cerrarModalConfirmar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar este recurso?</p>
+                <p class="warning-text">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="form-actions">
+                <button class="btn-secondary" onclick="cerrarModalConfirmar()">
+                    Cancelar
+                </button>
+                <button class="btn-danger" onclick="confirmarEliminar()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 CERTUS - Sistema de Gestión de Recursos</p>
+            <p>Powered by <strong>Jeffcode</strong></p>
+        </div>
+    </footer>
+
+    <!-- Notificación Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CERTUS Drive - Sistema de Recursos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- AppBar -->
+    <header class="appbar">
+        <div class="appbar-content">
+            <div class="appbar-left">
+                <img src="assets/certus.png" alt="CERTUS" class="appbar-logo" onerror="this.src='https://www.certus.edu.pe/wp-content/uploads/2023/03/logo-certus-upn.svg'">
+                <h1 class="appbar-title">CERTUS Drive</h1>
+            </div>
+            
+            <div class="appbar-right">
+                <!-- Skeleton Loader para appbar -->
+                <div class="appbar-skeleton" id="appbarSkeleton">
+                    <div class="skeleton-email"></div>
+                    <div class="skeleton-button"></div>
+                    <div class="skeleton-button"></div>
+                </div>
+                
+                <!-- Contenido real del appbar (inicialmente oculto) -->
+                <div class="appbar-content-right" id="appbarContentRight" style="display: none;">
+                    <div class="user-info" id="userInfo">
+                        <span class="user-email"></span>
+                    </div>
+                    
+                    <div class="dropdown-areas">
+                        <button class="btn-areas" id="btnAreas">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                            <span>Áreas</span>
+                            <svg class="icon-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+                        </button>
+                        <div class="dropdown-menu" id="dropdownAreas">
+                            <div class="dropdown-item" onclick="filterByArea(null)">
+                                <span>📚 Todas las áreas</span>
+                            </div>
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                    </div>
+                    
+                    <div class="dropdown-areas">
+                        <button class="btn-areas" id="btnTipos">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-7-6zm4 18H7V4h5v5h5v11z"/></svg>
+                            <span>Tipo</span>
+                            <svg class="icon-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+                        </button>
+                        <div class="dropdown-menu" id="dropdownTipos">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                    </div>
+                    
+                    <button class="btn-admin" id="btnAdmin" style="display: none;" onclick="irAdminPanel()">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 6V4h-4v2h4zM4 8v11h16V8H4zm16-2c1.11 0 2 .89 2 2v11c0 1.11-.89 2-2 2H4c-1.11 0-2-.89-2-2V8c0-1.11.89-2 2-2h4V4c0-1.11.89-2 2-2h4c1.11 0 2 .89 2 2v2h4z"/></svg>
+                        <span>Panel Admin</span>
+                    </button>
+                    
+                    <button class="btn-logout" onclick="cerrarSesion()">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                        <span>Salir</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2 class="hero-title">Sistema de Drivers CERTUS</h2>
+            <p class="hero-subtitle">Accede a todos los recursos y documentos de manera rápida y organizada</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Buscar por título, área o palabra clave..."
+                        onkeyup="performSearch()"
+                        autocomplete="off"
+                    >
+                    <div id="searchSuggestions" class="search-suggestions"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Carrusel de Áreas -->
+    <section class="areas-section">
+        <div class="container">
+            <div class="section-header">
+                <h3 class="section-title">Áreas Disponibles</h3>
+                <div class="carousel-controls">
+                    <button class="carousel-btn" onclick="scrollCarousel('left')" title="Anterior" aria-label="Anterior">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <button class="carousel-btn" onclick="scrollCarousel('right')" title="Siguiente" aria-label="Siguiente">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="carousel-wrapper">
+                <div class="carousel" id="areasCarousel">
+                    <!-- Se llenará dinámicamente desde Supabase -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resultados de Búsqueda -->
+    <section class="results-section" id="resultsSection">
+        <div class="container">
+            <h3 class="section-title" id="resultsTitle">Todos los Recursos</h3>
+            
+            <!-- Skeleton Loader -->
+            <div class="skeleton-grid" id="skeletonLoader">
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-category"></div>
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-description"></div>
+                        <div class="skeleton-link"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-category"></div>
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-description"></div>
+                        <div class="skeleton-link"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-category"></div>
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-description"></div>
+                        <div class="skeleton-link"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-category"></div>
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-description"></div>
+                        <div class="skeleton-link"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-category"></div>
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-description"></div>
+                        <div class="skeleton-link"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-category"></div>
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-description"></div>
+                        <div class="skeleton-link"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="results-grid" id="resultsGrid" style="display: none;">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            
+            <!-- Paginación -->
+            <div id="paginationContainer"></div>
+            
+            <div class="no-results" id="noResults">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <h4>No se encontraron resultados</h4>
+                <p>Intenta con otros términos de búsqueda o selecciona un área</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 CERTUS - Sistema de Gestión de Recursos</p>
+            <p>Powered by <strong>Jeffcode</strong></p>
+        </div>
+    </footer>
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
