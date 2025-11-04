@@ -144,7 +144,7 @@ function cargarOpcionesArea() {
         'ATENCIÓN- CANALES': '📞',
         'CRÉDITO Y COBRANZAS': '💰',
         'FACTURACIÓN': '📄',
-        'RR.HH': '👤',
+        'RR.AA': '👤',
         'PEC': '📊',
         'REINGRESO': '🔄'
     };
@@ -188,28 +188,28 @@ function mostrarRecursos() {
 
     tbody.innerHTML = recursosPagina.map(recurso => `
         <tr>
-            <td><span class="area-badge">${recurso.area}</span></td>
-            <td><strong>${recurso.titulo}</strong></td>
-            <td>${recurso.descripcion || '<em>Sin descripción</em>'}</td>
-            <td>
+            <td data-label="Área"><span class="area-badge">${recurso.area}</span></td>
+            <td data-label="Título"><strong>${recurso.titulo}</strong></td>
+            <td data-label="Descripción">${recurso.descripcion || '<em>Sin descripción</em>'}</td>
+            <td data-label="Enlace">
                 <a href="${recurso.enlace}" target="_blank" class="enlace-link">
                     🔗 Ver Drive
                 </a>
             </td>
-            <td>
+            <td data-label="Palabras Clave">
                 <div class="palabras-clave">
                     ${(recurso.palabras_clave || []).map(p => 
                         `<span class="palabra-tag">${p}</span>`
                     ).join('')}
                 </div>
             </td>
-            <td>
+            <td data-label="Estado">
                 <span class="estado-badge ${recurso.is_active ? 'estado-activo' : 'estado-inactivo'}">
                     ${recurso.is_active ? '✅ Activo' : '❌ Inactivo'}
                 </span>
             </td>
-            <td>${formatearFecha(recurso.created_at)}</td>
-            <td>
+            <td data-label="Fecha">${formatearFecha(recurso.created_at)}</td>
+            <td data-label="Acciones">
                 <div class="actions-cell">
                     <button class="btn-icon btn-edit" onclick="editarRecurso('${recurso.id}')" title="Editar">
                         ✏️

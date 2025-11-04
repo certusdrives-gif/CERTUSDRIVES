@@ -945,7 +945,17 @@ body {
     .areas-section, .results-section { padding-left: 1rem; padding-right: 1rem; }
     
     .results-grid { grid-template-columns: 1fr; }
-    .area-card { min-width: 280px; }
+    
+    /* Ajuste para tarjetas de área en mobile */
+    .area-card { 
+        min-width: 85vw;
+        max-width: 85vw;
+    }
+    
+    .carousel {
+        padding: 1rem 0.5rem;
+        gap: 1rem;
+    }
 
     .footer .container {
         flex-direction: column;
