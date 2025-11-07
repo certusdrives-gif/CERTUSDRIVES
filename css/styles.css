@@ -558,43 +558,86 @@ body {
     transition: var(--transition-fast);
     box-shadow: var(--shadow-md);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
 }
+
 .area-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
 }
 
+.area-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .area-card-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .area-icon {
-    width: 50px;
-    height: 50px;
-    background: var(--primary);
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: 2px solid var(--primary);
     border-radius: var(--border-radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    color: white;
-    margin-left: 1.5rem;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.area-icon svg {
+    width: 24px;
+    height: 24px;
 }
 
 .area-card h4 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
+    margin: 0;
     font-weight: 600;
+    flex: 1;
 }
 
 .area-card p {
     color: var(--text-secondary);
     font-size: 0.9rem;
-    margin-bottom: 1rem;
+    margin: 0;
+}
+
+.area-email {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(69, 123, 157, 0.08);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.area-email svg {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--primary);
+    opacity: 0.9;
+}
+
+.area-email span {
+    flex: 1;
+    word-break: break-word;
+    font-weight: 500;
 }
 
 .area-count {
@@ -609,8 +652,8 @@ body {
 
 /* --- RESULTS SECTION --- */
 .results-section {
-    padding: 3rem 0 5rem;
-    min-height: 400px;
+    padding: 3rem 0 8rem; /* Aumentado padding inferior para evitar que el footer tape los recursos */
+    min-height: calc(100vh - 300px); /* Asegura que ocupe al menos la altura visible menos header/footer */
     flex: 1;
 }
 
@@ -699,6 +742,7 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 1.5rem;
     margin-top: 2rem;
+    padding-bottom: 3rem; /* Espacio para que el footer no tape los recursos */
 }
 
 .result-card {
@@ -822,6 +866,7 @@ body {
     color: white;
     padding: 2rem 0;
     text-align: center;
+    margin-top: auto; /* Empuja el footer al final de la página */
 }
 
 /* --- PAGINACIÓN --- */

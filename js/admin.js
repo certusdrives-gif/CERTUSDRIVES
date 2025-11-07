@@ -105,6 +105,12 @@ async function cargarRecursos() {
             .from('recursos')
             .select(`
                 *,
+                areas:area_id (
+                    id,
+                    nombre,
+                    correo,
+                    icono
+                ),
                 profiles:created_by (
                     email,
                     full_name
@@ -128,39 +134,71 @@ async function cargarRecursos() {
 // ESTADÍSTICAS
 // ============================================
 
-function actualizarEstadisticas() {
+async function actualizarEstadisticas() {
     const total = recursosOriginales.length;
     const activos = recursosOriginales.filter(r => r.is_active).length;
-    const areasUnicas = [...new Set(recursosOriginales.map(r => r.area))].length;
-
-    document.getElementById('totalRecursos').textContent = total;
-    document.getElementById('recursosActivos').textContent = activos;
-    document.getElementById('totalAreas').textContent = areasUnicas;
+    
+    // Contar áreas activas desde la BD
+    try {
+        const { count, error } = await supabase
+            .from('areas')
+            .select('*', { count: 'exact', head: true })
+            .eq('activo', true);
+        
+        if (error) throw error;
+        
+        const areasUnicas = count || 0;
+        
+        document.getElementById('totalRecursos').textContent = total;
+        document.getElementById('recursosActivos').textContent = activos;
+        document.getElementById('totalAreas').textContent = areasUnicas;
+    } catch (error) {
+        console.error('Error actualizando estadísticas:', error);
+        // Fallback: contar áreas únicas en recursos
+        const areasUnicas = [...new Set(recursosOriginales.map(r => r.area_id).filter(Boolean))].length;
+        document.getElementById('totalRecursos').textContent = total;
+        document.getElementById('recursosActivos').textContent = activos;
+        document.getElementById('totalAreas').textContent = areasUnicas;
+    }
 }
 
-function cargarOpcionesArea() {
-    const iconos = {
-        'ATENCIÓN - FRONT': '👥',
-        'ATENCIÓN- CANALES': '📞',
-        'CRÉDITO Y COBRANZAS': '💰',
-        'FACTURACIÓN': '📄',
-        'RR.AA': '👤',
-        'PEC': '📊',
-        'REINGRESO': '🔄'
-    };
-    
-    const areas = [...new Set(recursosOriginales.map(r => r.area))].sort();
-    const select = document.getElementById('filtroArea');
-    
-    select.innerHTML = '<option value="">Todas las áreas</option>';
-    
-    areas.forEach(area => {
-        const option = document.createElement('option');
-        option.value = area;
-        const icono = iconos[area] || '📁';
-        option.textContent = `${icono} ${area}`;
-        select.appendChild(option);
-    });
+
+async function cargarOpcionesArea() {
+    try {
+        // Cargar áreas desde BD
+        const { data: areas, error } = await supabase
+            .from('areas')
+            .select('id, nombre, icono')
+            .eq('activo', true)
+            .order('orden', { ascending: true });
+        
+        if (error) throw error;
+        
+        // Llenar el select del filtro
+        const selectFiltro = document.getElementById('filtroArea');
+        selectFiltro.innerHTML = '<option value="">Todas las áreas</option>';
+        
+        areas.forEach(area => {
+            const option = document.createElement('option');
+            option.value = area.nombre;
+            option.textContent = `${area.nombre}`;
+            selectFiltro.appendChild(option);
+        });
+        
+        // Llenar el select del formulario de recursos
+        const selectForm = document.getElementById('inputArea');
+        selectForm.innerHTML = '<option value="">Selecciona un área</option>';
+        
+        areas.forEach(area => {
+            const option = document.createElement('option');
+            option.value = area.id; // ✅ Guardar el ID (UUID)
+            option.textContent = area.nombre;
+            selectForm.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Error cargando áreas:', error);
+    }
 }
 
 // ============================================
@@ -188,7 +226,7 @@ function mostrarRecursos() {
 
     tbody.innerHTML = recursosPagina.map(recurso => `
         <tr>
-            <td data-label="Área"><span class="area-badge">${recurso.area}</span></td>
+            <td data-label="Área"><span class="area-badge">${recurso.areas?.nombre || 'Sin área'}</span></td>
             <td data-label="Título"><strong>${recurso.titulo}</strong></td>
             <td data-label="Descripción">${recurso.descripcion || '<em>Sin descripción</em>'}</td>
             <td data-label="Enlace">
@@ -286,7 +324,7 @@ function buscarRecursos() {
 
     recursosFiltrados = recursosOriginales.filter(recurso => {
         const textoCompleto = `
-            ${recurso.area} 
+            ${recurso.areas?.nombre || ''} 
             ${recurso.titulo} 
             ${recurso.descripcion || ''} 
             ${(recurso.palabras_clave || []).join(' ')}
@@ -313,7 +351,7 @@ function aplicarFiltros() {
 
     recursosFiltrados = recursosOriginales.filter(recurso => {
         // Filtro por área
-        if (areaSeleccionada && recurso.area !== areaSeleccionada) {
+        if (areaSeleccionada && recurso.areas?.nombre !== areaSeleccionada) {
             return false;
         }
 
@@ -358,7 +396,7 @@ function editarRecurso(id) {
 
     document.getElementById('modalTitulo').textContent = 'Editar Recurso';
     document.getElementById('recursoId').value = recurso.id;
-    document.getElementById('inputArea').value = recurso.area;
+    document.getElementById('inputArea').value = recurso.area_id || ''; // Usar area_id en lugar de area
     document.getElementById('inputTitulo').value = recurso.titulo;
     document.getElementById('inputDescripcion').value = recurso.descripcion || '';
     document.getElementById('inputEnlace').value = recurso.enlace;
@@ -376,7 +414,7 @@ async function guardarRecurso(event) {
     event.preventDefault();
 
     const id = document.getElementById('recursoId').value;
-    const area = document.getElementById('inputArea').value.trim();
+    const areaId = document.getElementById('inputArea').value.trim(); // Ahora es area_id (UUID)
     const titulo = document.getElementById('inputTitulo').value.trim();
     const descripcion = document.getElementById('inputDescripcion').value.trim();
     const enlace = document.getElementById('inputEnlace').value.trim();
@@ -384,7 +422,7 @@ async function guardarRecurso(event) {
     const isActive = document.getElementById('inputActivo').checked;
 
     // Validaciones
-    if (!area || !titulo || !enlace) {
+    if (!areaId || !titulo || !enlace) {
         mostrarToast('Por favor completa todos los campos obligatorios', 'error');
         return;
     }
@@ -403,7 +441,7 @@ async function guardarRecurso(event) {
     const usuario = await obtenerUsuarioActual();
 
     const datosRecurso = {
-        area,
+        area_id: areaId, // ✅ Usar area_id en lugar de area
         titulo,
         descripcion: descripcion || null,
         enlace,
