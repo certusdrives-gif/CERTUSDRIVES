@@ -38,8 +38,12 @@ async function validarUsuarioDespuesDeOAuth() {
         if (session && session.user) {
             const email = session.user.email;
             
+            // Validar dominio corporativo
+            const dominiosPermitidos = ['@certus.edu.pe', '@visivaedu.com'];
+            const dominioValido = dominiosPermitidos.some(dominio => email.endsWith(dominio));
+            
             // Si el email no es corporativo, eliminar usuario y sesión
-            if (!email.endsWith('@certus.edu.pe')) {
+            if (!dominioValido) {
                 // Cerrar sesión sin mostrar errores
                 await supabase.auth.signOut().catch(() => {});
                 

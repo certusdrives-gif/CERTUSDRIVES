@@ -25,7 +25,10 @@ async function checkAuth() {
         }
         
         // Validar dominio corporativo
-        if (!currentUser.email.endsWith('@certus.edu.pe')) {
+        const dominiosPermitidos = ['@certus.edu.pe', '@visivaedu.com'];
+        const dominioValido = dominiosPermitidos.some(dominio => currentUser.email.endsWith(dominio));
+        
+        if (!dominioValido) {
             await supabase.auth.signOut();
             window.location.replace('login.html?error=domain_not_allowed');
             return;

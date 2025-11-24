@@ -72,8 +72,11 @@ async function handleRegistro(event) {
     }
     
     // Validar dominio
-    if (!email.endsWith('@certus.edu.pe')) {
-        mostrarMensaje('error', 'Solo se permiten correos @certus.edu.pe');
+    const dominiosPermitidos = ['@certus.edu.pe', '@visivaedu.com'];
+    const dominioValido = dominiosPermitidos.some(dominio => email.endsWith(dominio));
+    
+    if (!dominioValido) {
+        mostrarMensaje('error', 'Solo se permiten correos @certus.edu.pe o @visivaedu.com');
         return;
     }
     
@@ -161,7 +164,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             const email = session.user.email;
             
             // Validar dominio
-            if (!email.endsWith('@certus.edu.pe')) {
+            const dominiosPermitidos = ['@certus.edu.pe', '@visivaedu.com'];
+            const dominioValido = dominiosPermitidos.some(dominio => email.endsWith(dominio));
+            
+            if (!dominioValido) {
                 // Limpiar hash
                 window.history.replaceState(null, null, window.location.pathname);
                 
@@ -183,7 +189,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 // Mostrar error
-                mostrarMensaje('error', 'Solo se permiten correos corporativos @certus.edu.pe');
+                mostrarMensaje('error', 'Solo se permiten correos corporativos @certus.edu.pe o @visivaedu.com');
                 return;
             } else {
                 // Email corporativo válido - ir a index
@@ -214,13 +220,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Mostrar mensaje de error si viene del parámetro
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('error') === 'domain_not_allowed') {
-        mostrarMensaje('error', 'Solo se permiten correos corporativos @certus.edu.pe');
+        mostrarMensaje('error', 'Solo se permiten correos corporativos @certus.edu.pe o @visivaedu.com');
         window.history.replaceState(null, null, window.location.pathname);
     }
     
     // Verificar si ya hay sesión válida
     const user = await obtenerUsuarioActual();
-    if (user && user.email.endsWith('@certus.edu.pe')) {
+    const dominiosPermitidos = ['@certus.edu.pe', '@visivaedu.com'];
+    const dominioValido = user && dominiosPermitidos.some(dominio => user.email.endsWith(dominio));
+    
+    if (dominioValido) {
         window.location.href = 'index.html';
     }
 });
