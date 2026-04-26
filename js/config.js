@@ -11,4 +11,5 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const CORPORATE_DOMAIN = '@certus.edu.pe';
 
 // Inicializar cliente de Supabase
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Usamos var para evitar conflicto con window.supabase del CDN
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
