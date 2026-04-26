@@ -4,8 +4,8 @@
 // IMPORTANTE: En producción (Netlify), estas variables deben 
 // estar en Variables de Entorno, NO en el código
 
-const SUPABASE_URL = 'https://alcrunnigsatnvwexssd.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsY3J1bm5pZ3NhdG52d2V4c3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTQzMjQsImV4cCI6MjA3Nzc3MDMyNH0.xQlhoBHJYKwMEQnIqCwq3rzG6GqOLxYI43Z4VafGorA';
+const SUPABASE_URL = 'https://tpciwzofvygzjikaiqco.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwY2l3em9mdnlnemppa2FpcWNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNjQxMjcsImV4cCI6MjA5Mjc0MDEyN30.a0OBdUBO4pIgs5e018enhcU5DIfCUfvMs4ABZzaXPCk';
 
 // Dominio corporativo permitido
 const CORPORATE_DOMAIN = '@certus.edu.pe';
